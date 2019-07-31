@@ -9,6 +9,7 @@ public class BeliefRevision {
     public ArrayList<Map<Character, Boolean>> solution = new ArrayList<>();
     private Map<Character, Boolean> termDictionary = new HashMap<>();
     private ArrayList<Character> terms = new ArrayList<>();
+    private Map<Character, Boolean> contradictions = new HashMap<>();
 
     /*
    Verify whether the equation or set of equations is satisfiable
@@ -61,12 +62,12 @@ public class BeliefRevision {
         }
     }
 
-    public String findSolution(String k, String phi){
+    public String findSolution(String k, String phi) {
         String[] splitK = k.split(", ");
-
 
         findSolutions(splitK);
         ArrayList<Map<Character, Boolean>> kSolution = solution;
+        ArrayList<Character> kTerms = terms;
         System.out.println(kSolution.toString());
         termDictionary.clear();
         solution.clear();
@@ -78,24 +79,84 @@ public class BeliefRevision {
         findSolutions(phiArray);
 
         ArrayList<Map<Character, Boolean>> phiSolution = solution;
-
+        ArrayList<Character> phiTerms = terms;
         System.out.println(phiSolution.toString());
-        String solution = reviseBelief(k , phi);
 
-        return solution;
+        checkIfContradiction(kSolution, kTerms, phiSolution, phiTerms);
+
+        if (contradictions.size() > 0) {
+            String solution = reviseBelief(splitK, phiArray, phiTerms);
+
+            //check if it satisfies postulates?
+            return solution;
+        } else {
+            return k + ", " + phi;
+        }
     }
 
-    private String reviseBelief(String k, String phi){
+    private void checkIfContradiction(ArrayList<Map<Character, Boolean>> kSolutions, ArrayList<Character> kTerms, ArrayList<Map<Character, Boolean>> phiSolutions, ArrayList<Character> phiTerms) {
+        boolean isContradiction = false;
+        for (Map<Character, Boolean> kSolution : kSolutions) {
+            for (Map<Character, Boolean> phiSolution : phiSolutions) {
+                for (Character kTerm : kTerms) {
+                    for (Character phiTerm : phiTerms) {
+                        if (kTerm == phiTerm) {
+                            if (kSolution.get(kTerm) != phiSolution.get(phiTerm)) {
+                                contradictions.replace(phiTerm, phiSolution.get(phiTerm));
+                            } else {
+                                if (contradictions.get(phiTerm)) {
+                                    contradictions.remove(phiTerm);
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+
+    }
+
+    private String reviseBelief(String[] k, String[] phi, ArrayList<Character> phiTerms) {
 
         String possibleSolution = "";
         // find a new set of beliefs
+        ArrayList<String> markedSets = new ArrayList<>();
+        for (String set : k) {
+            boolean isMarked = false;
+            String[] splitFormula = set.split(" "); // split the formula up by space
+            for (String term : splitFormula) { // for each of these parts
+                char[] chars = term.toCharArray(); // turn each term into a character array
+                for (char character : chars) { // for each character, terms should either be a single letter or a letter with !
+                    if (Character.isLetter(character)) { //if it's a letter
+                        for (Character phiTerm : phiTerms) {
+                            if (character == phiTerm) {
+                                isMarked = true;
+                            }
+                        }
+                    }
+                }
+            }
+            if(isMarked) {
+                markedSets.add(set);
+            }
+        }
 
-        int distance = distance(possibleSolution, k);// check distance between new set of beliefs and the old one
+        for(String markedSet: markedSets){
+            String[] temp = new String[1];
+            temp[0] = markedSet;
+            findSolutions(temp);
+
+
+            contradictions
+        }
+
+        //int distance = distance(possibleSolution, k);// check distance between new set of beliefs and the old one
 
         return possibleSolution;
     }
 
-    private int distance(String possibleSolution, String k){
+    private int distance(String possibleSolution, String k) {
 
         return 0;
     }
@@ -164,7 +225,7 @@ public class BeliefRevision {
         boolean term1 = false;
 
         // see if the formula is only 1 term
-        if(splitFormula.length == 1){
+        if (splitFormula.length == 1) {
             if (splitFormula[0].toCharArray()[0] == '!') {
                 term1 = !termDictionary.get(splitFormula[0].toCharArray()[1]);
                 //System.out.println(termDictionary.get(splitFormula[0].toCharArray()[1]));
