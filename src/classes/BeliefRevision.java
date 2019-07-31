@@ -6,15 +6,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class BeliefRevision {
-    public ArrayList<String> solution = new ArrayList<>();
-
+    public ArrayList<Map<Character, Boolean>> solution = new ArrayList<>();
+    private Map<Character, Boolean> termDictionary = new HashMap<>();
     private ArrayList<Character> terms = new ArrayList<>();
 
     /*
    Verify whether the equation or set of equations is satisfiable
     */
     public void findSolutions(String[] formulas) {
-        Map<Character, Boolean> termDictionary = new HashMap<>();
         // gather all terms
         for (String formula : formulas) { // for each formula
             String[] splitFormula = formula.split(" "); // split the formula up by space
@@ -39,7 +38,6 @@ public class BeliefRevision {
         booleanMap.put(0, false);
         booleanMap.put(1, true);
 
-
         for (int i = 0; i < numRows; i++) {
             boolean isFormulaSatisfiable = true;
 
@@ -54,24 +52,35 @@ public class BeliefRevision {
             }
 
             if (isFormulaSatisfiable) {
-                solution.add(termDictionary.toString()); // add this to our solution if it works
+                Map<Character, Boolean> temp = new HashMap<>();
+                for (int j = 0; j < terms.size(); j++) {
+                    temp.put(terms.get(j), termDictionary.get(terms.get(j)));
+                }
+                solution.add(temp); // add this to our solution if it works
             }
-
-            return termDictionary;
         }
     }
 
     public String findSolution(String k, String phi){
         String[] splitK = k.split(", ");
 
+
         findSolutions(splitK);
+        ArrayList<Map<Character, Boolean>> kSolution = solution;
+        System.out.println(kSolution.toString());
+        termDictionary.clear();
+        solution.clear();
+        terms.clear();
 
         String[] phiArray = new String[1];
+
         phiArray[0] = phi;
         findSolutions(phiArray);
+
+        ArrayList<Map<Character, Boolean>> phiSolution = solution;
+
+        System.out.println(phiSolution.toString());
         String solution = reviseBelief(k , phi);
-
-
 
         return solution;
     }
@@ -82,10 +91,13 @@ public class BeliefRevision {
         // find a new set of beliefs
 
         int distance = distance(possibleSolution, k);// check distance between new set of beliefs and the old one
+
+        return possibleSolution;
     }
 
     private int distance(String possibleSolution, String k){
 
+        return 0;
     }
 
     /*
@@ -150,6 +162,18 @@ public class BeliefRevision {
      */
     private boolean evaluateFormula(String[] splitFormula) {
         boolean term1 = false;
+
+        // see if the formula is only 1 term
+        if(splitFormula.length == 1){
+            if (splitFormula[0].toCharArray()[0] == '!') {
+                term1 = !termDictionary.get(splitFormula[0].toCharArray()[1]);
+                //System.out.println(termDictionary.get(splitFormula[0].toCharArray()[1]));
+            } else {
+                term1 = termDictionary.get(splitFormula[0].toCharArray()[0]);
+            }
+            return term1;
+        }
+
         boolean term2 = false;
 
         // check if the first term is bracketed
