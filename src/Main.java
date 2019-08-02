@@ -8,6 +8,6 @@ public class Main {
         String phi = "!A";
         BeliefRevision beliefRevision = new BeliefRevision();
 
-        System.out.println(beliefRevision.findSolution(k, phi));
+        System.out.println(beliefRevision.reviseBelief(k, phi));
     }
 }

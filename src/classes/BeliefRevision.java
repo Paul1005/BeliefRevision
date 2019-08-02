@@ -1,5 +1,7 @@
 package classes;
 
+import java.awt.image.AreaAveragingScaleFilter;
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -13,7 +15,7 @@ public class BeliefRevision {
     /*
    Verify whether the equation or set of equations is satisfiable
     */
-    public ArrayList<Map<Character, Boolean>> findSolutions(String[] formulas) {
+    private ArrayList<Map<Character, Boolean>> findSolutions(String[] formulas) {
         terms.clear();
         termDictionary.clear();
         ArrayList<Map<Character, Boolean>> solution = new ArrayList<>();
@@ -65,44 +67,39 @@ public class BeliefRevision {
         return solution;
     }
 
-    public String findSolution(String k, String phi) {
+    public String reviseBelief(String k, String phi) {
         String[] splitK = k.split(", ");
-
-        /*findSolutions(splitK);
-        ArrayList<Map<Character, Boolean>> kSolution = solution;
-        ArrayList<Character> kTerms = terms;
-        System.out.println(kSolution.toString());
-        termDictionary.clear();
-        solution.clear();
-        terms.clear();*/
 
         String[] phiArray = new String[1];
 
         phiArray[0] = phi;
-        /*findSolutions(phiArray);
-
-        ArrayList<Map<Character, Boolean>> phiSolution = solution;
-        ArrayList<Character> phiTerms = terms;
-        System.out.println(phiSolution.toString());*/
 
         return checkIfContradiction(splitK, phiArray);
     }
 
     private String checkIfContradiction(String[] splitK, String[] phiArray) {
-        ArrayList<String> markedSets = new ArrayList<>();
+        ArrayList<Formula> markedSets = new ArrayList<>();
         ArrayList<Map<Character, Boolean>> phiSolutions = findSolutions(phiArray);
-        ArrayList<Character> phiTerms = terms;
-        ArrayList<Character> kTerms = new ArrayList<>();
+
+        ArrayList<Formula> phiFormulas = new ArrayList<>();
+        ArrayList<Formula> kFormulas = new ArrayList<>();
+        for (String phiFormula : phiArray) {
+            Formula formula = new Formula(phiFormula, terms);
+            phiFormulas.add(formula);
+        }
         for (String kSet : splitK) {
             boolean isContradiction = true;
-            String[] splitFormula = kSet.split(" ");
-            ArrayList<Map<Character, Boolean>> kSolutions = findSolutions(splitFormula);
-            kTerms = terms;
+            String[] kSetArray = new String[1];
+            kSetArray[0] = kSet;
+            ArrayList<Map<Character, Boolean>> kSolutions = findSolutions(kSetArray);
+            Formula formula = new Formula(kSet, terms);
+            kFormulas.add(formula);
+
             for (Map<Character, Boolean> phiSolution : phiSolutions) {
                 for (Map<Character, Boolean> kSolution : kSolutions) {
                     boolean isContradictionThisSolution = false;
-                    for (Character phiCharacter : phiTerms) {
-                        for (Character kCharacter : kTerms) {
+                    for (Character phiCharacter : phiFormulas.get(0).getTerms()) {
+                        for (Character kCharacter : terms) {
                             if (phiCharacter == kCharacter) {
                                 if (phiSolution.get(phiCharacter) != kSolution.get(kCharacter)) {
                                     isContradictionThisSolution = true;
@@ -114,7 +111,7 @@ public class BeliefRevision {
                 }
             }
             if (isContradiction) {
-                markedSets.add(kSet);
+                markedSets.add(formula);
             }
         }
 
@@ -122,36 +119,36 @@ public class BeliefRevision {
             return Arrays.toString(splitK) + ", " + Arrays.toString(phiArray);
         }
 
-        //int length = markedSets.get(0).length();
-        //String finalMarkedSet = markedSets.get(0);
+        int length = markedSets.get(0).getTerms().size();
+        Formula finalMarkedSet = markedSets.get(0);
         int distance = Integer.MAX_VALUE;
-        ArrayList<String> finalKPhi = new ArrayList<>();
-        for (String markedSet : markedSets) {
-        /*    if (markedSet.length() < length) {
+        //ArrayList<String> finalKPhi = new ArrayList<>();
+        for (Formula markedSet : markedSets) {
+            if (markedSet.getTerms().size() < length) {
                 finalMarkedSet = markedSet;
             }
-        }*/
-            ArrayList<String> kPhi = new ArrayList<>();
-            for (String kSet : splitK) {
-                if (!kSet.equals(markedSet)) {
-                    kPhi.add(kSet);
-                }
-            }
-            kPhi.add(phiArray[0]);
-
-            ArrayList<Map<Character, Boolean>> kSolutions = findSolutions(splitK);
-            kTerms = terms;
-            ArrayList<Map<Character, Boolean>> kPhiSolutions = findSolutions(kPhi.toArray(new String[0]));
-            ArrayList<Character> kPhiTerms = terms;
-            int setDistance = distance(kSolutions, kPhiSolutions, kTerms, kPhiTerms);
-            System.out.println(setDistance);
-            if(setDistance<distance){
-                distance = setDistance;
-                finalKPhi = kPhi;
+        }
+        ArrayList<String> kPhi = new ArrayList<>();
+        for (Formula kSet : kFormulas) {
+            if (!kSet.equals(finalMarkedSet)) {
+                kPhi.add(kSet.getFormulaString());
             }
         }
+        kPhi.add(phiFormulas.get(0).getFormulaString());
+
+        ArrayList<Map<Character, Boolean>> kSolutions = findSolutions(splitK);
+        ArrayList<Character> kTerms = terms;
+        ArrayList<Map<Character, Boolean>> kPhiSolutions = findSolutions(kPhi.toArray(new String[0]));
+
+        int setDistance = distance(kSolutions, kPhiSolutions, kTerms, terms);
+        System.out.println(setDistance);
+       /* if (setDistance < distance) {
+            distance = setDistance;
+            finalKPhi = kPhi;
+        }*/
+
         System.out.println(distance);
-        return finalKPhi.toString();
+        return kPhi.toString();
     }
 
     private int distance(ArrayList<Map<Character, Boolean>> kSolutions, ArrayList<Map<Character, Boolean>> kPhiSolutions, ArrayList<Character> kTerms, ArrayList<Character> kPhiTerms) {
@@ -162,14 +159,14 @@ public class BeliefRevision {
                 for (Character kPhiCharacter : kPhiTerms) {
                     for (Character kCharacter : kTerms) {
                         if (kPhiCharacter == kCharacter) {
-                            if(phiSolution.get(kPhiCharacter) != kSolution.get(kCharacter)){
+                            if (phiSolution.get(kPhiCharacter) != kSolution.get(kCharacter)) {
                                 distanceBetweenSolutions++;
                             }
                         }
                     }
                 }
-                if(distanceBetweenSolutions<minDistance){
-                    minDistance=distanceBetweenSolutions;
+                if (distanceBetweenSolutions < minDistance) {
+                    minDistance = distanceBetweenSolutions;
                 }
             }
         }
