@@ -122,8 +122,8 @@ public class BeliefRevision {
             return Arrays.toString(splitK) + ", " + Arrays.toString(phiArray);
         }
 
-        int length = markedSets.get(0).length();
-        String finalMarkedSet = markedSets.get(0);
+        //int length = markedSets.get(0).length();
+        //String finalMarkedSet = markedSets.get(0);
         int distance = Integer.MAX_VALUE;
         ArrayList<String> finalKPhi = new ArrayList<>();
         for (String markedSet : markedSets) {
@@ -131,25 +131,26 @@ public class BeliefRevision {
                 finalMarkedSet = markedSet;
             }
         }*/
-
             ArrayList<String> kPhi = new ArrayList<>();
             for (String kSet : splitK) {
-                if (!kSet.equals(finalMarkedSet)) {
+                if (!kSet.equals(markedSet)) {
                     kPhi.add(kSet);
                 }
             }
-            kPhi.add(Arrays.toString(phiArray));
+            kPhi.add(phiArray[0]);
 
             ArrayList<Map<Character, Boolean>> kSolutions = findSolutions(splitK);
             kTerms = terms;
-            ArrayList<Map<Character, Boolean>> kPhiSolutions = findSolutions(splitK);
+            ArrayList<Map<Character, Boolean>> kPhiSolutions = findSolutions(kPhi.toArray(new String[0]));
             ArrayList<Character> kPhiTerms = terms;
             int setDistance = distance(kSolutions, kPhiSolutions, kTerms, kPhiTerms);
+            System.out.println(setDistance);
             if(setDistance<distance){
                 distance = setDistance;
                 finalKPhi = kPhi;
             }
         }
+        System.out.println(distance);
         return finalKPhi.toString();
     }
 
@@ -237,7 +238,6 @@ public class BeliefRevision {
      */
     private boolean evaluateFormula(String[] splitFormula) {
         boolean term1 = false;
-
         // see if the formula is only 1 term
         if (splitFormula.length == 1) {
             if (splitFormula[0].toCharArray()[0] == '!') {
