@@ -88,9 +88,7 @@ public class BeliefRevision {
             Formula formula = new Formula(phiFormula, phiTerms, phiSolutions);
             phiFormulas.add(formula);
         }
-        //System.out.println(phiFormulas.get(0).getTerms().toString());
         for (String kSet : splitK) {
-            //System.out.println(phiFormulas.get(0).getTerms().toString());
             boolean isContradiction = true;
             String[] kSetArray = new String[1];
             kSetArray[0] = kSet;
@@ -116,7 +114,6 @@ public class BeliefRevision {
                 }
             }
             if (isContradiction) {
-               // System.out.println(formula.getFormulaString());
                 markedSets.add(formula);
             }
         }
@@ -146,8 +143,7 @@ public class BeliefRevision {
                     }
                 }
             }
-        }
-        System.out.println(finalMarkedSets.toString());*/
+        }*/
         ArrayList<String> kPhi = new ArrayList<>();
         for (Formula kSet : kFormulas) {
             boolean isInMarkedSet = false;
@@ -163,18 +159,20 @@ public class BeliefRevision {
         }
         kPhi.add(phiFormulas.get(0).getFormulaString());
 
-        //ArrayList<Map<Character, Boolean>> kSolutions = findSolutions(splitK);
-        //ArrayList<Character> kTerms = terms;
-       // ArrayList<Map<Character, Boolean>> kPhiSolutions = findSolutions(kPhi.toArray(new String[0]));
+        ArrayList<Character> kTerms = gatherAllTerms(splitK);
+        ArrayList<Map<Character, Boolean>> kSolutions = findSolutions(splitK, kTerms);
 
-        //int setDistance = distance(kSolutions, kPhiSolutions, kTerms, terms);
-        //System.out.println(setDistance);
-       /* if (setDistance < distance) {
+        ArrayList<Character> kPhiTerms = gatherAllTerms(kPhi.toArray(new String[0]));
+        ArrayList<Map<Character, Boolean>> kPhiSolutions = findSolutions(kPhi.toArray(new String[0]), kPhiTerms);
+
+        int setDistance = distance(kSolutions, kPhiSolutions, kTerms, kPhiTerms);
+        System.out.println("Distance between k and kphi is: " + setDistance);
+        /*if (setDistance < distance) {
             distance = setDistance;
             finalKPhi = kPhi;
-        }*/
+        }
 
-        //System.out.println(distance);
+        System.out.println(distance);*/
         return kPhi.toString();
     }
 
@@ -267,7 +265,6 @@ public class BeliefRevision {
             if (splitFormula[0].toCharArray()[0] == '!') {
                 term1 = !termDictionary.get(splitFormula[0].toCharArray()[1]);
             } else {
-                System.out.println(splitFormula[0].toCharArray()[0]);
                 term1 = termDictionary.
                         get(
                                 splitFormula[0].
