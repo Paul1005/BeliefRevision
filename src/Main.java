@@ -6,16 +6,16 @@ public class Main {
 
     public static void main(String[] args) {
 
-        Scanner scanner = new Scanner(System.in);  // Create a Scanner object
+        /*Scanner scanner = new Scanner(System.in);  // Create a Scanner object
         // Give user instructions
         System.out.println("Please enter K, separate different statements with a comma and a space, press enter when complete");
         String k = scanner.nextLine();
         System.out.println("Please enter Phi, press enter when complete");
-        String phi = scanner.nextLine();
-        //String k = "A, B, C || A, !C";
-        //String phi = "!A";
+        String phi = scanner.nextLine();*/
+        String k = "B, C || A, !C";
+        String phi = "!A";
         BeliefRevision beliefRevision = new BeliefRevision();
 
-        System.out.println(beliefRevision.reviseBelief(k, phi));
+        System.out.println("kPhi is: " + beliefRevision.reviseBelief(k, phi));
     }
 }
